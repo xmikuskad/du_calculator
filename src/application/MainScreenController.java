@@ -14,7 +14,7 @@ public class MainScreenController {
 	@FXML
 	private Button solveButton, clearButton;
 	@FXML
-	private TextField resField, posField1, otherField1,posField2, otherField2,posField3, otherField3,posField4, otherField4;
+	private TextField resField, posField1, otherField1,posField2, otherField2,posField3, otherField3;
 	
 	public void initialize()
 	{
@@ -35,6 +35,14 @@ public class MainScreenController {
 			}
 			
 		});
+		
+		
+		/*posField1.setText("::pos{0,2,24.2804,69.8747,-134.4331}");
+		posField2.setText("::pos{0,2,24.2977,69.8974,-134.4708}");
+		posField3.setText("::pos{0,2,24.2834,69.8521,-133.7080}");
+		otherField1.setText("160");
+		otherField2.setText("110");
+		otherField3.setText("200");*/
 	}
 	
 	private void solveIt()
@@ -48,8 +56,6 @@ public class MainScreenController {
 		varList.add(otherField2.getText());
 		varList.add(posField3.getText());
 		varList.add(otherField3.getText());
-		varList.add(posField4.getText());
-		varList.add(otherField4.getText());
 		
 		solver.startSolve(varList,this);
 	}
@@ -59,11 +65,9 @@ public class MainScreenController {
 		posField1.setText("");
 		posField2.setText("");
 		posField3.setText("");
-		posField4.setText("");
 		otherField1.setText("");
 		otherField2.setText("");
 		otherField3.setText("");
-		otherField4.setText("");
 		resField.setText("");
 	}
 	
