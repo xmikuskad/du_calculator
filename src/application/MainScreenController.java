@@ -1,5 +1,7 @@
 package application;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,17 +9,38 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
 
 public class MainScreenController {
 
 	@FXML
-	private Button solveButton, clearButton;
+	private Button solveButton, clearButton, xBtn1,xBtn2,xBtn3;
 	@FXML
 	private TextField resField, posField1, otherField1,posField2, otherField2,posField3, otherField3;
+	@FXML
+	private Label clipboardLabel;
+	@FXML
+	private ImageView img1,img2,img3;
 	
 	public void initialize()
 	{
+		clipboardLabel.setVisible(false);
+		
+        try {
+            URL url = getClass().getResource("../resource/image.png"); 
+            InputStream strm = url.openStream(); 
+            Image image = new Image(strm);
+            img1.setImage(image);
+            img2.setImage(image);
+            img3.setImage(image);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+		
 		solveButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -36,17 +59,42 @@ public class MainScreenController {
 			
 		});
 		
+		xBtn1.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent arg0) {
+				posField1.setText("");
+				otherField1.setText("");
+			}
+			
+		});
 		
-		/*posField1.setText("::pos{0,2,24.2804,69.8747,-134.4331}");
-		posField2.setText("::pos{0,2,24.2977,69.8974,-134.4708}");
-		posField3.setText("::pos{0,2,24.2834,69.8521,-133.7080}");
-		otherField1.setText("160");
-		otherField2.setText("110");
-		otherField3.setText("200");*/
+		xBtn2.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent arg0) {
+				posField2.setText("");
+				otherField2.setText("");
+			}
+			
+		});
+		
+		xBtn3.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent arg0) {
+				posField3.setText("");
+				otherField3.setText("");
+			}
+			
+		});
+		
+		
 	}
 	
 	private void solveIt()
 	{
+	
 		Solver solver = new Solver();
 		
 		List<String> varList = new ArrayList<String>();
@@ -69,11 +117,22 @@ public class MainScreenController {
 		otherField2.setText("");
 		otherField3.setText("");
 		resField.setText("");
+		clipboardLabel.setVisible(false);
 	}
 	
 	public void setResult(String text)
 	{
 		resField.setText(text);
+	}
+	
+	public void hideClipMsg()
+	{
+		clipboardLabel.setVisible(false);
+	}
+	
+	public void showClipMsg()
+	{
+		clipboardLabel.setVisible(true);
 	}
 	
 }
