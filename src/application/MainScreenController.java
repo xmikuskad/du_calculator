@@ -20,7 +20,7 @@ public class MainScreenController {
 	@FXML
 	private Button solveButton, clearButton, xBtn1,xBtn2,xBtn3;
 	@FXML
-	private TextField resField, posField1, otherField1,posField2, otherField2,posField3, otherField3;
+	private TextField resField, resField2, posField1, otherField1,posField2, otherField2,posField3, otherField3;
 	@FXML
 	private Label clipboardLabel;
 	@FXML
@@ -123,6 +123,11 @@ public class MainScreenController {
 	public void setResult(String text)
 	{
 		resField.setText(text);
+	}
+	
+	public void setResult2(String text)
+	{
+		resField2.setText(text);
 	}
 	
 	public void hideClipMsg()

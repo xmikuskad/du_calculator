@@ -28,7 +28,7 @@ public class Solver {
 	double[] bValue = new double[FIELD_COUNT];
 	double[] cValue = new double[FIELD_COUNT];		
 	
-	double x,y,z,a,b,c;
+	double x1,x2,y1,y2,z1,z2,a,b,c;
 	
 	//Main function
 	public void startSolve(List<String> varList, MainScreenController con)
@@ -58,14 +58,18 @@ public class Solver {
 		
 		try {
 			prepare(); //OK
-			makeCalculations();
-			finishIt();
-			String result = "::pos{"+positions.get(0).get(0)+","+positions.get(0).get(1)+","+a+","+b+","+c+"}";
-			con.setResult(result);
 			
-			StringSelection stringSelection = new StringSelection(result);
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			clipboard.setContents(stringSelection, null);
+			boolean order = makeCalculations();
+			
+			if(order) {
+				finishIt(x1,y1,z1,true,con);
+				finishIt(x2,y2,z2,false,con);
+			}
+			else {
+				finishIt(x2,y2,z2,true,con);
+				finishIt(x1,y1,z1,false,con);
+			}
+
 			con.showClipMsg();
 		}
 		catch(Exception e)
@@ -82,12 +86,11 @@ public class Solver {
 				e.printStackTrace();
 			}
 		}
-		
-		
+				
 		
 	}
 	
-	private void finishIt()
+	private void finishIt(double x, double y, double z, boolean first, MainScreenController con)
 	{
 		double s = Math.sqrt(x*x + y*y + z*z);
 		a = 90 - Math.acos(z/s)  * 180 / Math.PI;
@@ -103,11 +106,33 @@ public class Solver {
 		BigDecimal cc = new BigDecimal(c).setScale(4, RoundingMode.HALF_EVEN);
 		c=cc.doubleValue();
 		
+		if(first) {
+			writeToFile("Main","");
+		}
+		else {
+			writeToFile("Alternative","");
+		}
+		
 		writeToFile("s",String.valueOf(s));
 		writeToFile("a",String.valueOf(a));
 		writeToFile("b",String.valueOf(b));
 		writeToFile("c",String.valueOf(c));
 
+		String result = "::pos{"+positions.get(0).get(0)+","+positions.get(0).get(1)+","+a+","+b+","+c+"}";
+		
+		if(first)
+		{
+			con.setResult(result);
+			
+			StringSelection stringSelection = new StringSelection(result);
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			clipboard.setContents(stringSelection, null);
+		}
+		else
+		{
+			con.setResult2(result);
+		}
+		
 	}
 	
 	private void prepare()
@@ -136,12 +161,12 @@ public class Solver {
 
 	}
 
-	private void makeCalculations()
+	private boolean makeCalculations()
 	{
 		double[] deltaA = new double[2];
 		double[] deltaB = new double[2];
 		double[] deltaC = new double[2];	
-		double alpha,beta,gamma,x1,x2,y1,y2,z1,z2,o1,o2,p1,p2;
+		double alpha,beta,gamma,o1,o2,p1,p2;
 		double v1,v2,D1,D2, V1, V2,A1,A2,B1,C2;
 		
 		for(int i =0; i<2; i++)
@@ -211,16 +236,10 @@ public class Solver {
 		writeToFile("o2",String.valueOf(o2));
 			
 		if(o1 < o2) {
-			x = x1;
-			y = y1;
-			z = z1;
-			writeToFile("Choosing variant 1","");
+			return true;
 		} 
 		else {
-			x = x2;
-			y = y2;
-			z = z2;
-			writeToFile("Choosing variant 2","");
+			return false;
 		}
 	}
 	
