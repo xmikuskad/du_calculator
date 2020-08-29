@@ -3,9 +3,13 @@ package application;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -17,7 +21,9 @@ public class Solver {
 	
 	int FIELD_COUNT = 3;
 	BufferedWriter writer;
+	BufferedReader reader;
 	final String fileName = "log.txt";
+	final String readerFileName = "readerFile.txt";
 	
 	List<List<Double>> positions = new ArrayList<List<Double>>();
 	List<Double> other = new ArrayList<Double>();
@@ -28,18 +34,27 @@ public class Solver {
 	double[] bValue = new double[FIELD_COUNT];
 	double[] cValue = new double[FIELD_COUNT];		
 	
-	double x1,x2,y1,y2,z1,z2,a,b,c;
+	double x1,x2,y1,y2,z1,z2,a,b,c,R;
 	
 	//Main function
 	public void startSolve(List<String> varList, MainScreenController con)
 	{	
+		
+		try {
+			reader = new BufferedReader(new FileReader(readerFileName));
+		} catch (FileNotFoundException e2) {
+			e2.printStackTrace();
+			con.setResult("File reading failed");
+			con.hideClipMsg();
+		}
+		
 		try {
 			checkInput(varList,con);
 		}
 		catch(Exception e)
 		{
 			System.out.println("Wrong input!");
-			con.setResult("Wrong input!");
+			con.setResult(e.getMessage());
 			con.hideClipMsg();
 			e.printStackTrace();
 			return;
@@ -54,6 +69,8 @@ public class Solver {
 			writeToFile("\nNew logging",Instant.now().toString());
 		} catch (Exception e1) {
 			e1.printStackTrace();
+			con.setResult("File writing failed");
+			con.hideClipMsg();
 		}
 		
 		try {
@@ -95,7 +112,7 @@ public class Solver {
 		double s = Math.sqrt(x*x + y*y + z*z);
 		a = 90 - Math.acos(z/s)  * 180 / Math.PI;
 		b = Math.atan(y/x)* 180 / Math.PI;
-		c = s - 120000;
+		c = s - R;
 		
 		BigDecimal aa = new BigDecimal(a).setScale(4, RoundingMode.HALF_EVEN);
 		a=aa.doubleValue();
@@ -140,7 +157,7 @@ public class Solver {
 		for(int i=0; i<FIELD_COUNT;i++)
 		{
 			
-			sValue[i] = 120000 + positions.get(i).get(4);
+			sValue[i] = R + positions.get(i).get(4);
 			aValue[i] = sValue[i] * Math.sin(Math.PI/2 - positions.get(i).get(2) * Math.PI/180) * Math.cos(positions.get(i).get(3) * Math.PI / 180);
 			bValue[i] = sValue[i] * Math.sin(Math.PI/2 - positions.get(i).get(2) * Math.PI/180) * Math.sin(positions.get(i).get(3) * Math.PI / 180);
 			cValue[i] = sValue[i] * Math.cos(Math.PI/2 - positions.get(i).get(2) * Math.PI/180);
@@ -243,6 +260,40 @@ public class Solver {
 		}
 	}
 	
+	private double getRValue(String value1, String value2) throws Exception
+	{
+		List<String> list = new ArrayList<String>();
+		String tmp;
+		
+		System.out.println("ORIG VALS "+value1 +" "+value2);
+		
+		while((tmp = reader.readLine()) != null)
+		{
+			list.add(tmp);
+		}
+		
+		double value = -1;
+		
+		for(String str:list) {
+			String tmpValue = str.split("=")[1];
+			String val1 = str.split("=")[0].split(",")[0];
+			String val2 = str.split("=")[0].split(",")[1];
+			
+			System.out.println("V1 "+val1+" V2 "+val2+" END "+tmpValue);
+			
+			if(value1.equals(val1) && value2.equals(val2))
+			{
+				Double foundValue = Double.valueOf(tmpValue);
+				System.out.println("Found "+foundValue);
+				value = Math.sqrt(foundValue/(4*Math.PI));
+				break;
+			}
+		}
+		
+		System.out.println("VALUE IS "+value+" !!!!!!!!!!!!!!!!!!!!!!!!");
+		return value;
+	}
+	
 	private void checkInput(List<String> varList, MainScreenController con) throws Exception
 	{
 		for(int i =0;i<FIELD_COUNT;i++) {
@@ -256,6 +307,7 @@ public class Solver {
 				throw new Exception("Other field is empty!");
 			}
 			
+			
 			//Get inputs from string
 			List<String> tmp = Arrays.asList(pos.split("\\{"));
 			String positionsRaw = Arrays.asList(tmp.get(1).split("\\}")).get(0);
@@ -266,10 +318,27 @@ public class Solver {
 			for(String str : tmpList) {
 				positions.get(i).add(Double.valueOf(str));
 			}		
-			other.add(Double.valueOf(otherVar));
-		
+			other.add(Double.valueOf(otherVar));		
+			
+			//Only calculate once
+			if(i==0)
+			{
+				//Prepping R value
+				if(reader == null)
+				{
+					throw new Exception("Reader file not found");
+				}
+				R = getRValue(tmpList.get(0),tmpList.get(1));
+				if(R<0)
+				{
+					throw new Exception("Invalid coordinates");
+				}
+			}
 		}
-
+		
+		//Maybe add checking if all pos are on same planets!?
+		//TODO
+		
 	}
 
 	private void checkFileSize()
