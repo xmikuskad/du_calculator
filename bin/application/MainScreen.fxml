@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="680.0" prefWidth="560.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainScreenController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="560.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainScreenController">
    <children>
       <HBox prefHeight="40.0" prefWidth="200.0">
          <children>
@@ -44,6 +44,7 @@
                   <Insets left="25.0" />
                </HBox.margin>
             </TextField>
+            <Button fx:id="imgLoad1" mnemonicParsing="false" text="I" />
             <TextField fx:id="otherField1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="100.0" promptText="200">
                <font>
                   <Font size="15.0" />
@@ -98,6 +99,7 @@
                   <Insets left="25.0" />
                </HBox.margin>
             </TextField>
+            <Button fx:id="imgLoad2" mnemonicParsing="false" text="I" />
             <TextField fx:id="otherField2" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="100.0" promptText="150">
                <font>
                   <Font size="15.0" />
@@ -152,6 +154,7 @@
                   <Insets left="25.0" />
                </HBox.margin>
             </TextField>
+            <Button fx:id="imgLoad3" mnemonicParsing="false" text="I" />
             <TextField fx:id="otherField3" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="100.0" promptText="120">
                <font>
                   <Font size="15.0" />
@@ -163,6 +166,61 @@
             <Button minHeight="-Infinity" mnemonicParsing="false" prefHeight="35.0" fx:id="xBtn3">
                <graphic>
                   <ImageView fx:id="img3" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" />
+               </graphic>
+               <HBox.margin>
+                  <Insets left="30.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox prefHeight="40.0" prefWidth="200.0">
+         <children>
+            <Label maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" text="Position 4">
+               <font>
+                  <Font size="22.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="25.0" />
+               </HBox.margin>
+            </Label>
+            <Label maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" text="Ore distance">
+               <font>
+                  <Font size="22.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="235.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox prefHeight="50.0" prefWidth="200.0">
+         <children>
+            <TextField fx:id="posField4" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="295.0" promptText="::pos{0,2,x,y,z}">
+               <font>
+                  <Font size="15.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="25.0" />
+               </HBox.margin>
+            </TextField>
+            <Button fx:id="imgLoad4" mnemonicParsing="false" text="I" />
+            <TextField fx:id="otherField4" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="100.0" promptText="120">
+               <font>
+                  <Font size="15.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="35.0" />
+               </HBox.margin>
+            </TextField>
+            <Button minHeight="-Infinity" mnemonicParsing="false" prefHeight="35.0" fx:id="xBtn4">
+               <graphic>
+                  <ImageView fx:id="img4" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
                <HBox.margin>
                   <Insets left="30.0" />
@@ -209,35 +267,15 @@
             </TextField>
          </children>
          <VBox.margin>
-            <Insets top="40.0" />
+            <Insets top="35.0" />
          </VBox.margin>
-      </HBox>
-      <HBox prefHeight="50.0" prefWidth="200.0">
-         <children>
-            <Label maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="121.0" text="Alternative">
-               <font>
-                  <Font size="22.0" />
-               </font>
-               <HBox.margin>
-                  <Insets left="25.0" />
-               </HBox.margin>
-            </Label>
-            <TextField fx:id="resField2" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="300.0">
-               <font>
-                  <Font size="15.0" />
-               </font>
-               <HBox.margin>
-                  <Insets left="50.0" />
-               </HBox.margin>
-            </TextField>
-         </children>
       </HBox>
       <Button fx:id="clearButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" text="Clear fields">
          <font>
             <Font size="16.0" />
          </font>
          <VBox.margin>
-            <Insets left="420.0" top="30.0" />
+            <Insets left="420.0" top="10.0" />
          </VBox.margin>
       </Button>
    </children>

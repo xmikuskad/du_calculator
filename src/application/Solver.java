@@ -19,7 +19,7 @@ import java.util.List;
 
 public class Solver {
 	
-	int FIELD_COUNT = 3;
+	int FIELD_COUNT = 4;
 	BufferedWriter writer;
 	BufferedReader reader;
 	final String fileName = "log.txt";
@@ -34,12 +34,12 @@ public class Solver {
 	double[] bValue = new double[FIELD_COUNT];
 	double[] cValue = new double[FIELD_COUNT];		
 	
-	double x1,x2,y1,y2,z1,z2,a,b,c,R;
+	double x1,y1,z1,a,b,c,R;
 	
 	//Main function
 	public void startSolve(List<String> varList, MainScreenController con)
 	{	
-		
+		//Opening reader file
 		try {
 			reader = new BufferedReader(new FileReader(readerFileName));
 		} catch (FileNotFoundException e2) {
@@ -48,6 +48,7 @@ public class Solver {
 			con.hideClipMsg();
 		}
 		
+		//Checking input and loading variables
 		try {
 			checkInput(varList,con);
 		}
@@ -73,20 +74,14 @@ public class Solver {
 			con.hideClipMsg();
 		}
 		
+		//Making calculations
 		try {
 			prepare(); //OK
 			
-			boolean order = makeCalculations();
+			makeCalculations();
 			
-			if(order) {
-				finishIt(x1,y1,z1,true,con);
-				finishIt(x2,y2,z2,false,con);
-			}
-			else {
-				finishIt(x2,y2,z2,true,con);
-				finishIt(x1,y1,z1,false,con);
-			}
-
+			finishIt(x1,y1,z1,con);
+			
 			con.showClipMsg();
 		}
 		catch(Exception e)
@@ -107,7 +102,7 @@ public class Solver {
 		
 	}
 	
-	private void finishIt(double x, double y, double z, boolean first, MainScreenController con)
+	private void finishIt(double x, double y, double z, MainScreenController con)
 	{
 		double s = Math.sqrt(x*x + y*y + z*z);
 		a = 90 - Math.acos(z/s)  * 180 / Math.PI;
@@ -122,33 +117,19 @@ public class Solver {
 		
 		BigDecimal cc = new BigDecimal(c).setScale(4, RoundingMode.HALF_EVEN);
 		c=cc.doubleValue();
-		
-		if(first) {
-			writeToFile("Main","");
-		}
-		else {
-			writeToFile("Alternative","");
-		}
-		
+				
 		writeToFile("s",String.valueOf(s));
 		writeToFile("a",String.valueOf(a));
 		writeToFile("b",String.valueOf(b));
 		writeToFile("c",String.valueOf(c));
 
 		String result = "::pos{"+positions.get(0).get(0)+","+positions.get(0).get(1)+","+a+","+b+","+c+"}";
-		
-		if(first)
-		{
-			con.setResult(result);
+
+		con.setResult(result);
 			
-			StringSelection stringSelection = new StringSelection(result);
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			clipboard.setContents(stringSelection, null);
-		}
-		else
-		{
-			con.setResult2(result);
-		}
+		StringSelection stringSelection = new StringSelection(result);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(stringSelection, null);
 		
 	}
 	
@@ -178,86 +159,49 @@ public class Solver {
 
 	}
 
-	private boolean makeCalculations()
+	private void makeCalculations()
 	{
-		double[] deltaA = new double[2];
-		double[] deltaB = new double[2];
-		double[] deltaC = new double[2];	
-		double alpha,beta,gamma,o1,o2,p1,p2;
-		double v1,v2,D1,D2, V1, V2,A1,A2,B1,C2;
+		double[] deltaA = new double[3];
+		double[] deltaB = new double[3];
+		double[] deltaC = new double[3];	
+		double p1,p2,p3;
+		double D1,D2,A1,A2,B1,B2;
 		
-		for(int i =0; i<2; i++)
+		for(int i =0; i<3; i++)
 		{
 			deltaA[i] = aValue[0] - aValue[1+i]; 
 			deltaB[i] = bValue[0] - bValue[1+i]; 
 			deltaC[i] = cValue[0] - cValue[1+i]; 
 		}	
 		
-		p1 = other.get(1) * other.get(1) - deltaA[0] * deltaA[0] - deltaB[0] * deltaB[0] - deltaC[0] * deltaC[0] - other.get(0) * other.get(0); 
-		p2 = other.get(2) * other.get(2) - deltaA[1] * deltaA[1] - deltaB[1] * deltaB[1] - deltaC[1] * deltaC[1] - other.get(0) * other.get(0); 		
+		p1 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(1) * other.get(1) + aValue[1] * aValue[1] + bValue[1] * bValue[1] + cValue[1] * cValue[1]; 
+		p2 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(2) * other.get(2) + aValue[2] * aValue[2] + bValue[2] * bValue[2] + cValue[2] * cValue[2];
+		p3 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(3) * other.get(3) + aValue[3] * aValue[3] + bValue[3] * bValue[3] + cValue[3] * cValue[3];
 		
-		A1 = 4*deltaA[0]*deltaC[1] - 4*deltaA[1]*deltaC[0];
-		B1 = 4*deltaB[0]*deltaC[1] - 4*deltaB[1]*deltaC[0];
-		A2 = 4*deltaA[0]*deltaB[1] - 4*deltaA[1]*deltaB[0];
-		C2 = 4*deltaC[0]*deltaB[1] - 4*deltaC[1]*deltaB[0];
-		D1 =-1*(-2*p1*deltaC[1] + 2*p2*deltaC[0]);
-		D2 =-1*(-2*p1*deltaB[1] + 2*p2*deltaB[0]);
+		
+		A1 = -4*deltaA[0]*deltaC[1] + 4*deltaA[1]*deltaC[0];
+		B1 = -4*deltaB[0]*deltaC[1] + 4*deltaB[1]*deltaC[0];
+		A2 = -4*deltaA[0]*deltaC[2] + 4*deltaA[2]*deltaC[0];
+		B2 = -4*deltaB[0]*deltaC[2] + 4*deltaB[2]*deltaC[0];
+		D1 =(2*p1*deltaC[1] - 2*p2*deltaC[0]);
+		D2 =(2*p1*deltaC[2] - 2*p3*deltaC[0]);
+
+
 		
 		writeToFile("A1",String.valueOf(A1));
 		writeToFile("B1",String.valueOf(B1));
 		writeToFile("A2",String.valueOf(A2));
-		writeToFile("C2",String.valueOf(C2));
+		writeToFile("B2",String.valueOf(B2));
 		writeToFile("D1",String.valueOf(D1));
 		writeToFile("D2",String.valueOf(D2));
 		
-		alpha = (-1 *A1/B1)*(-1 *A1/B1) + (-1 *A2/C2) * (-1 *A2/C2) + 1;
-		beta = 2*( (-A1/B1) * (D1/B1) + (-A2/C2) * (D2/C2) );
-		gamma = (D1/B1) * (D1/B1) + (D2/C2) * (D2/C2) - other.get(0) * other.get(0);
-		
-		writeToFile("Alpha",String.valueOf(alpha));
-		writeToFile("Beta",String.valueOf(beta));
-		writeToFile("Gamma",String.valueOf(gamma));
-		
-		v1 = (-beta + Math.sqrt(beta*beta - 4 * alpha * gamma)) / (2*alpha);
-		v2 = (-beta - Math.sqrt(beta*beta - 4 * alpha * gamma)) / (2*alpha);
-		
-		writeToFile("v1",String.valueOf(v1));
-		writeToFile("v2",String.valueOf(v2));
-		
-		x1 = aValue[0] + v1;
-		y1 = bValue[0] + v1 * (-A1/B1) + D1/B1;
-		z1 = cValue[0] + v1 * (-A2/C2) + D2/C2;
+		x1 = (D1*B2 - D2*B1) / (A1*B2 - A2*B1);
+		y1 = (D1 - A1*x1) / B1;
+		z1 = (p1 +2*deltaA[0]*x1 + 2*deltaB[0]*y1) / (-2*deltaC[0]);
 		
 		writeToFile("x1",String.valueOf(x1));
 		writeToFile("y1",String.valueOf(y1));
 		writeToFile("z1",String.valueOf(z1));
-				
-		x2 = aValue[0] + v2;
-		y2 = bValue[0] + v2 * (-A1/B1) + D1/B1;
-		z2 = cValue[0] + v2 * (-A2/C2) + D2/C2;
-		
-		writeToFile("x2",String.valueOf(x2));
-		writeToFile("y2",String.valueOf(y2));
-		writeToFile("z2",String.valueOf(z2));
-		
-		V1 = (aValue[0] -x1) * (aValue[0] -x1) + (bValue[0] - y1) * (bValue[0] - y1) + (cValue[0]-z1) * (cValue[0]-z1) +  (aValue[1] -x1) * (aValue[1] -x1) + (bValue[1] - y1) * (bValue[1] - y1) + (cValue[1]-z1) * (cValue[1]-z1) + (aValue[2] -x1) * (aValue[2] -x1) + (bValue[2] - y1) * (bValue[2] - y1) + (cValue[2]-z1) * (cValue[2]-z1);
-		V2 = (aValue[0] -x2) * (aValue[0] -x2) + (bValue[0] - y2) * (bValue[0] - y2) + (cValue[0]-z2) * (cValue[0]-z2) +  (aValue[1] -x2) * (aValue[1] -x2) + (bValue[1] - y2) * (bValue[1] - y2) + (cValue[1]-z2) * (cValue[1]-z2) + (aValue[2] -x2) * (aValue[2] -x2) + (bValue[2] - y2) * (bValue[2] - y2) + (cValue[2]-z2) * (cValue[2]-z2);
-		
-		writeToFile("V1",String.valueOf(V1));
-		writeToFile("V2",String.valueOf(V2));
-		
-		o1 = Math.sqrt(V1 - positions.get(0).get(4) - positions.get(1).get(4) - positions.get(2).get(4));
-		o2 = Math.sqrt(V2 - positions.get(0).get(4) - positions.get(1).get(4) - positions.get(2).get(4));
-		
-		writeToFile("o1",String.valueOf(o1));
-		writeToFile("o2",String.valueOf(o2));
-			
-		if(o1 < o2) {
-			return true;
-		} 
-		else {
-			return false;
-		}
 	}
 	
 	private double getRValue(String value1, String value2) throws Exception
