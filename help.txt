@@ -1,0 +1,39 @@
+Use Triangulator.exe to start program
+This program will triangulate position of the ore in Dual Universe
+If you use multiple monitors please capture screenshot only from the one running DU. Screenshot function only works for full hd displays (1920x1080), different resolutions will be added when asked.
+-------------------------------------------------
+Easy to use, self explanatory, but here is tutorial:
+1. Open Triangulor.exe
+2. (DU) Look for ore on your scanner
+3. (DU) open map
+4. (DU) press copy my position to clipboard 
+5. (App) paste position to field 
+6. (DU) open scanner, (tab + left click on it)
+7. (DU) take screenshot
+8. (App) click on frame icon (it will estimate distance to ore) 
+9. (DU) move to any direction (not recommended walking all time in straight line, and all position cant be done on one ground level)
+10. !!! repeat steps 3.-9., three more times !!!
+11. (App) click "Get ore position"
+12. (DU) paste to chat
+13. (DU) right click on chat, set as destination
+14. (DU) mine to destination, ore should be there
+------------------------------------------------------------------
+Buttons:
+X - button clear fields in a row
+Get ore position - calculate position to ore, also add to clipboard calculated coordinates
+Clear fields - Clear all fields
+Frame icon - take image from clipboard, and estimate distance to ore (only to closest one)
+Help - will show this guide
+----------------------------------------------------------
+Errors:
+Calculation error - Cannot calculate position of ore
+Make sure: a) all measurements are not is same straight line
+	   b) at least one is on different level
+	   c) there aren’t 2 different ores
+	   d) scanner was open when screenshotting
+	   e) you didn’t move when taking position and screenshot
+	   f) scanner was actualized when taking screenshot (alt + left click)
+
+QnA: 
+Q: If I have problem who/how do I contact?
+A: You can contact me on discord AX3Lino#9013

@@ -55,7 +55,8 @@ public class Solver {
 		catch(Exception e)
 		{
 			System.out.println("Wrong input!");
-			con.setResult(e.getMessage());
+			//con.setResult("Wrong input");
+			con.showAlertBox("ERROR!","Input problem!\nProblem: "+e.getMessage());
 			con.hideClipMsg();
 			e.printStackTrace();
 			return;
@@ -159,7 +160,7 @@ public class Solver {
 
 	}
 
-	private void makeCalculations()
+	private void makeCalculations() throws Exception
 	{
 		double[] deltaA = new double[3];
 		double[] deltaB = new double[3];
@@ -202,14 +203,34 @@ public class Solver {
 		writeToFile("x1",String.valueOf(x1));
 		writeToFile("y1",String.valueOf(y1));
 		writeToFile("z1",String.valueOf(z1));
+		
+		//Check for bullshit
+		double max = Math.max(Math.max(other.get(0),other.get(1)), Math.max(other.get(2),other.get(3)));
+		
+		double min = 1000;
+		int min_index = 0;
+		for(int i=0;i<FIELD_COUNT;i++)
+		{
+			if(other.get(i) < min)
+			{
+				min = other.get(i);
+				min_index = i;
+			}
+		}
+		
+		double tmp = Math.pow(x1-aValue[min_index],2) + Math.pow(y1-bValue[min_index],2) + Math.pow(z1-cValue[min_index],2);
+		
+		if(tmp > max*max)
+		{
+			writeToFile("Bullshit check failed, sorry","");
+			throw new Exception("HUE");
+		}
 	}
 	
 	private double getRValue(String value1, String value2) throws Exception
 	{
 		List<String> list = new ArrayList<String>();
 		String tmp;
-		
-		System.out.println("ORIG VALS "+value1 +" "+value2);
 		
 		while((tmp = reader.readLine()) != null)
 		{
@@ -223,23 +244,20 @@ public class Solver {
 			String val1 = str.split("=")[0].split(",")[0];
 			String val2 = str.split("=")[0].split(",")[1];
 			
-			System.out.println("V1 "+val1+" V2 "+val2+" END "+tmpValue);
-			
 			if(value1.equals(val1) && value2.equals(val2))
 			{
 				Double foundValue = Double.valueOf(tmpValue);
-				System.out.println("Found "+foundValue);
 				value = Math.sqrt(foundValue/(4*Math.PI));
 				break;
 			}
 		}
 		
-		System.out.println("VALUE IS "+value+" !!!!!!!!!!!!!!!!!!!!!!!!");
 		return value;
 	}
 	
 	private void checkInput(List<String> varList, MainScreenController con) throws Exception
 	{
+		//TODO ZORADIT OD NAJMENSIEHO
 		for(int i =0;i<FIELD_COUNT;i++) {
 		
 			positions.add(new ArrayList<Double>());
@@ -247,22 +265,47 @@ public class Solver {
 			String pos = varList.get(i*2);
 			String otherVar = varList.get(i*2 +1);
 			
+			if(pos.isEmpty())
+			{
+				throw new Exception("Position "+(i+1)+" is empty");
+			}
+			
 			if(otherVar.isEmpty()) {
-				throw new Exception("Other field is empty!");
+				throw new Exception("Ore distance "+(i+1)+" is empty!");
 			}
 			
 			
 			//Get inputs from string
 			List<String> tmp = Arrays.asList(pos.split("\\{"));
+			System.out.println(tmp.size());
+			
+			if(tmp.size() <=1)
+			{
+				throw new Exception("Position "+(i+1)+" is badly formatted!");
+			}
+			
 			String positionsRaw = Arrays.asList(tmp.get(1).split("\\}")).get(0);
 					
 			List<String> tmpList = Arrays.asList(positionsRaw.split(","));
 			
 			//Saving values to list
-			for(String str : tmpList) {
-				positions.get(i).add(Double.valueOf(str));
-			}		
-			other.add(Double.valueOf(otherVar));		
+			try {
+				for(String str : tmpList) {
+					positions.get(i).add(Double.valueOf(str));
+				}		
+			}
+			catch(Exception e)
+			{
+				throw new Exception("Position "+(i+1)+" is badly formatted!");
+			}
+			
+			try {
+				other.add(Double.valueOf(otherVar));		
+			}
+			catch(Exception e)
+			{
+				throw new Exception("Ore distance "+(i+1)+" is badly formatted!");
+			}
 			
 			//Only calculate once
 			if(i==0)
@@ -275,20 +318,20 @@ public class Solver {
 				R = getRValue(tmpList.get(0),tmpList.get(1));
 				if(R<0)
 				{
-					throw new Exception("Invalid coordinates");
+					R=120000;
+					con.showAlertBox("Warning!","Calculations for this planet may be inaccurate!");					
 				}
 			}
 		}
 		
 		//Maybe add checking if all pos are on same planets!?
-		//TODO
-		
+		//TODO	
 	}
 
 	private void checkFileSize()
 	{		
 		File file = new File(fileName);
-		if (!file.exists() || !file.isFile()) return;
+		if (file == null || !file.exists() || !file.isFile()) return;
 		
 		//If log file is bigger than 20mb, we should delete it
 		if(getFileSizeMegaBytes(file) > 20)

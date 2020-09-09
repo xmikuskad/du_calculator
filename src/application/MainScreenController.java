@@ -1,6 +1,8 @@
 package application;
 
+import java.awt.Desktop;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,10 +11,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -20,26 +26,30 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.input.Clipboard;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 
 public class MainScreenController {
 
 	@FXML
-	private Button solveButton, clearButton, xBtn1,xBtn2,xBtn3,xBtn4,imgLoad1,imgLoad2,imgLoad3,imgLoad4;
+	private Button solveButton, clearButton, xBtn1,xBtn2,xBtn3,xBtn4,imgLoad1,imgLoad2,imgLoad3,imgLoad4,helpBtn;
 	@FXML
 	private TextField resField, posField1, otherField1,posField2, otherField2,posField3, otherField3,posField4,otherField4;
 	@FXML
 	private Label clipboardLabel;
 	@FXML
-	private ImageView img1,img2,img3,img4;
+	private ImageView img1,img2,img3,img4,imageIcon1,imageIcon2,imageIcon3,imageIcon4;
+	
+	private Image programIcon;
 	
 	public void initialize()
 	{
 		clipboardLabel.setVisible(false);
 		
+		InputStream strm = null;
         try {
             URL url = getClass().getResource("../resource/image.png"); 
-            InputStream strm = url.openStream(); 
+            strm = url.openStream(); 
             Image image = new Image(strm);
             img1.setImage(image);
             img2.setImage(image);
@@ -49,7 +59,72 @@ public class MainScreenController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        finally {
+				try {
+					strm.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+        }
+        
+        try {
+            URL url = getClass().getResource("../resource/imgIcon.png"); 
+            strm = url.openStream(); 
+            Image image = new Image(strm);
+            imageIcon1.setImage(image);
+            imageIcon2.setImage(image);
+            imageIcon3.setImage(image);
+            imageIcon4.setImage(image);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+			try {
+				strm.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+        }
+        
+        try {
+            URL url = getClass().getResource("../resource/appIcon.png"); 
+            strm = url.openStream(); 
+            programIcon = new Image(strm);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+				try {
+					strm.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+        }
 		
+        helpBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent arg0) {
+				try {
+					File file = new File("help.txt");
+					
+					if (Desktop.isDesktopSupported()) {
+					    Desktop.getDesktop().edit(file);
+					} else {
+					    // dunno, up to you to handle this
+					}
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+					showAlertBox("ERROR!","Error opening help file");
+				}
+			}
+			
+		});
+        
 		solveButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -114,7 +189,8 @@ public class MainScreenController {
 			public void handle(ActionEvent arg0) {
 				Image img = Clipboard.getSystemClipboard().getImage();
 				if(img==null)
-					otherField1.setText("NO IMG IN CLIPBOARD");
+					//otherField1.setText("NO IMG");
+					showAlertBox("ERROR!","No screenshot in clipboard!");
 				else
 					otherField1.setText(String.valueOf(GetOreDistance(img)));
 			}
@@ -127,7 +203,8 @@ public class MainScreenController {
 			public void handle(ActionEvent arg0) {
 				Image img = Clipboard.getSystemClipboard().getImage();
 				if(img==null)
-					otherField2.setText("NO IMG IN CLIPBOARD");
+					//otherField2.setText("NO IMG");
+					showAlertBox("ERROR!","No screenshot in clipboard!");
 				else
 					otherField2.setText(String.valueOf(GetOreDistance(img)));
 			}
@@ -140,7 +217,8 @@ public class MainScreenController {
 			public void handle(ActionEvent arg0) {
 				Image img = Clipboard.getSystemClipboard().getImage();
 				if(img==null)
-					otherField3.setText("NO IMG IN CLIPBOARD");
+					//otherField3.setText("NO IMG");
+					showAlertBox("ERROR!","No screenshot in clipboard!");
 				else
 					otherField3.setText(String.valueOf(GetOreDistance(img)));
 			}
@@ -153,7 +231,8 @@ public class MainScreenController {
 			public void handle(ActionEvent arg0) {
 				Image img = Clipboard.getSystemClipboard().getImage();
 				if(img==null)
-					otherField4.setText("NO IMG IN CLIPBOARD");
+					//otherField4.setText("NO IMG");
+					showAlertBox("ERROR!","No screenshot in clipboard!");
 				else
 					otherField4.setText(String.valueOf(GetOreDistance(img)));
 			}
@@ -163,7 +242,7 @@ public class MainScreenController {
 		
 	}
 	
-	private int GetOreDistance(Image image)
+	private double GetOreDistance(Image image)
 	{
 		//	1421/580
 		int baseHeight = 580;
@@ -178,7 +257,6 @@ public class MainScreenController {
 			double red1 = color.getRed()*255;
 			double red2 = nextColor.getRed()*255;
 			
-			System.out.println("R1 = " +red1);
 			if((red1 >=147 || red1 <=85) && (red2 >=147 || red2 <=85))
 			{
 				
@@ -190,7 +268,7 @@ public class MainScreenController {
 		}
 		
 		int finalHeight = baseHeight - heightTracker;
-		int finalAmount = 0;
+		double finalAmount = 0;
 		
 		System.out.println("FINAL PIXEL WAS "+(heightTracker+7));
 		System.out.println("FINAL HEIGHT "+finalHeight);
@@ -228,6 +306,12 @@ public class MainScreenController {
 		//400+
 		finalAmount += (100.0/86.0) * finalHeight;
 		
+		
+		if(finalAmount < 10)
+		{
+			showAlertBox("ERROR!","Scanner lines not found! Check instructions!");
+			finalAmount = 0;
+		}
 		
 		return finalAmount;		
 	}
@@ -282,6 +366,20 @@ public class MainScreenController {
 	public void showClipMsg()
 	{
 		clipboardLabel.setVisible(true);
+	}
+	
+	//Vytvara chybove hlasky pri prihlasovani
+	public void showAlertBox(String header,String problem)
+	{
+		Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(header);
+            alert.setHeaderText(problem);
+            ((Stage)alert.getDialogPane().getScene().getWindow()).getIcons().add(programIcon);
+            
+            alert.showAndWait();
+        }
+		);
 	}
 	
 }
