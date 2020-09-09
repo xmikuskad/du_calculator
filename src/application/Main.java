@@ -23,6 +23,7 @@ public class Main extends Application {
 			primaryStage.setTitle("Triangulator");
 			primaryStage.show();
 			
+			//Loading icon
 			InputStream strm = null;
 	        try {
 	            URL url = getClass().getResource("../resource/appIcon.png"); 

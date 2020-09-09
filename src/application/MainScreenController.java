@@ -270,9 +270,6 @@ public class MainScreenController {
 		int finalHeight = baseHeight - heightTracker;
 		double finalAmount = 0;
 		
-		System.out.println("FINAL PIXEL WAS "+(heightTracker+7));
-		System.out.println("FINAL HEIGHT "+finalHeight);
-		
 		//100
 		if(finalHeight > 85) {
 			finalHeight -= 85;

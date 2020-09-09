@@ -1,5 +1,7 @@
 .metadata
+/bin/
 bin/
+bin/application
 tmp/
 *.tmp
 *.bak

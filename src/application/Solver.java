@@ -39,29 +39,6 @@ public class Solver {
 	//Main function
 	public void startSolve(List<String> varList, MainScreenController con)
 	{	
-		//Opening reader file
-		try {
-			reader = new BufferedReader(new FileReader(readerFileName));
-		} catch (FileNotFoundException e2) {
-			e2.printStackTrace();
-			con.setResult("File reading failed");
-			con.hideClipMsg();
-		}
-		
-		//Checking input and loading variables
-		try {
-			checkInput(varList,con);
-		}
-		catch(Exception e)
-		{
-			System.out.println("Wrong input!");
-			//con.setResult("Wrong input");
-			con.showAlertBox("ERROR!","Input problem!\nProblem: "+e.getMessage());
-			con.hideClipMsg();
-			e.printStackTrace();
-			return;
-		}
-		
 		//Logging
 		try {
 			checkFileSize();
@@ -71,9 +48,42 @@ public class Solver {
 			writeToFile("\nNew logging",Instant.now().toString());
 		} catch (Exception e1) {
 			e1.printStackTrace();
-			con.setResult("File writing failed");
+			con.showAlertBox("Error","Logging failed!");		
 			con.hideClipMsg();
+			return;
 		}
+		
+		//Opening reader file
+		try {
+			reader = new BufferedReader(new FileReader(readerFileName));
+		} catch (FileNotFoundException e2) {
+			e2.printStackTrace();
+			con.setResult("File reading failed");
+			con.hideClipMsg();
+			writeToFile("ERROR!","Cannot open fileReader.txt");
+		}
+		
+		//Checking input and loading variables
+		try {
+			checkInput(varList,con);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Wrong input!");
+			con.setResult("");
+			con.showAlertBox("ERROR!","Input problem!\nProblem: "+e.getMessage());
+			con.hideClipMsg();
+			e.printStackTrace();
+			writeToFile("ERROR!","Input problem! MSG: "+e.getMessage());
+			
+			try {
+				writer.close();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+			return;
+		}
+	
 		
 		//Making calculations
 		try {
@@ -88,9 +98,11 @@ public class Solver {
 		catch(Exception e)
 		{
 			System.out.println("Calculation problem!");
-			con.setResult("Calculation problem!");
+			con.showAlertBox("Error","Calculation problem!");	
+			con.setResult("");
 			e.printStackTrace();
 			con.hideClipMsg();
+			writeToFile("ERROR","Calculation problem!");
 		}
 		finally {
 			try {
@@ -126,6 +138,8 @@ public class Solver {
 
 		String result = "::pos{"+positions.get(0).get(0)+","+positions.get(0).get(1)+","+a+","+b+","+c+"}";
 
+		writeToFile("Final pos is",result);
+		
 		con.setResult(result);
 			
 		StringSelection stringSelection = new StringSelection(result);
@@ -178,16 +192,13 @@ public class Solver {
 		p1 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(1) * other.get(1) + aValue[1] * aValue[1] + bValue[1] * bValue[1] + cValue[1] * cValue[1]; 
 		p2 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(2) * other.get(2) + aValue[2] * aValue[2] + bValue[2] * bValue[2] + cValue[2] * cValue[2];
 		p3 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(3) * other.get(3) + aValue[3] * aValue[3] + bValue[3] * bValue[3] + cValue[3] * cValue[3];
-		
-		
+				
 		A1 = -4*deltaA[0]*deltaC[1] + 4*deltaA[1]*deltaC[0];
 		B1 = -4*deltaB[0]*deltaC[1] + 4*deltaB[1]*deltaC[0];
 		A2 = -4*deltaA[0]*deltaC[2] + 4*deltaA[2]*deltaC[0];
 		B2 = -4*deltaB[0]*deltaC[2] + 4*deltaB[2]*deltaC[0];
 		D1 =(2*p1*deltaC[1] - 2*p2*deltaC[0]);
 		D2 =(2*p1*deltaC[2] - 2*p3*deltaC[0]);
-
-
 		
 		writeToFile("A1",String.valueOf(A1));
 		writeToFile("B1",String.valueOf(B1));
@@ -223,7 +234,7 @@ public class Solver {
 		if(tmp > max*max)
 		{
 			writeToFile("Bullshit check failed, sorry","");
-			throw new Exception("HUE");
+			throw new Exception("BULLSHIT CHECK!");
 		}
 	}
 	
@@ -257,7 +268,6 @@ public class Solver {
 	
 	private void checkInput(List<String> varList, MainScreenController con) throws Exception
 	{
-		//TODO ZORADIT OD NAJMENSIEHO
 		for(int i =0;i<FIELD_COUNT;i++) {
 		
 			positions.add(new ArrayList<Double>());
@@ -277,7 +287,6 @@ public class Solver {
 			
 			//Get inputs from string
 			List<String> tmp = Arrays.asList(pos.split("\\{"));
-			System.out.println(tmp.size());
 			
 			if(tmp.size() <=1)
 			{
@@ -324,8 +333,45 @@ public class Solver {
 			}
 		}
 		
-		//Maybe add checking if all pos are on same planets!?
-		//TODO	
+		double pos1 = positions.get(0).get(0);
+		double pos2 = positions.get(0).get(1);
+		
+		for(int i =1;i<FIELD_COUNT;i++) {			
+			if(pos1 != positions.get(i).get(0) || pos2!=positions.get(i).get(1))
+				throw new Exception("All positions have to be on same planet!");			
+		}
+		
+		reorderBySmallest();
+		
+	}
+	
+	private void reorderBySmallest() throws Exception
+	{		
+		for(int i=0;i<3;i++)
+		{
+			double min = 99999.0;
+			int minIndex = -1;
+			for(int j=i;j<4;j++)
+			{
+				if(other.get(j) < min)
+				{
+					min = other.get(j);
+					minIndex = j;
+				}
+			}
+			
+			if(minIndex < 0)
+				throw new Exception("Ore distances are too big!");
+			
+			double tmp = other.get(i);
+			other.set(i, min);
+			other.set(minIndex, tmp);
+			
+			List<Double> tmpList = positions.get(i);
+			positions.set(i, positions.get(minIndex));
+			positions.set(minIndex, tmpList);			
+		}
+		
 	}
 
 	private void checkFileSize()
