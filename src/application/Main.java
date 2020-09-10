@@ -1,5 +1,6 @@
 package application;
 	
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -27,8 +28,18 @@ public class Main extends Application {
 			InputStream strm = null;
 	        try {
 	            URL url = getClass().getResource("../resource/appIcon.png"); 
-	            strm = url.openStream(); 
-	            Image image = new Image(strm);
+	            Image image = null;
+	            
+	            if(url!=null) {
+		            strm = url.openStream(); 
+		            image = new Image(strm);
+	            }
+	            else
+	            {
+	            	File file = new File("resource/appIcon.png");
+	            	image = new Image(file.toURI().toString());
+	            }
+	            
 				primaryStage.getIcons().add(image);
 
 	        } catch (Exception e) {
@@ -36,7 +47,8 @@ public class Main extends Application {
 	        }
 	        finally {
 					try {
-						strm.close();
+						if(strm!=null)
+							strm.close();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

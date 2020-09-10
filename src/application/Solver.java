@@ -23,7 +23,7 @@ public class Solver {
 	BufferedWriter writer;
 	BufferedReader reader;
 	final String fileName = "log.txt";
-	final String readerFileName = "readerFile.txt";
+	final String readerFileName = "resource/readerFile.txt";
 	
 	List<List<Double>> positions = new ArrayList<List<Double>>();
 	List<Double> other = new ArrayList<Double>();

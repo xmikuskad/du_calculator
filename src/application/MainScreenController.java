@@ -49,8 +49,17 @@ public class MainScreenController {
 		InputStream strm = null;
         try {
             URL url = getClass().getResource("../resource/image.png"); 
-            strm = url.openStream(); 
-            Image image = new Image(strm);
+            Image image = null;
+            
+            if(url!=null) {
+	            strm = url.openStream(); 
+	            image = new Image(strm);
+            }
+            else
+            {
+            	File file = new File("resource/image.png");
+            	image = new Image(file.toURI().toString());
+            }
             img1.setImage(image);
             img2.setImage(image);
             img3.setImage(image);
@@ -61,7 +70,8 @@ public class MainScreenController {
         }
         finally {
 				try {
-					strm.close();
+					if(strm!=null)
+							strm.close();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -69,8 +79,17 @@ public class MainScreenController {
         
         try {
             URL url = getClass().getResource("../resource/imgIcon.png"); 
-            strm = url.openStream(); 
-            Image image = new Image(strm);
+            Image image = null;
+            
+            if(url!=null) {
+	            strm = url.openStream(); 
+	            image = new Image(strm);
+            }
+            else
+            {
+            	File file = new File("resource/imgIcon.png");
+            	image = new Image(file.toURI().toString());
+            }
             imageIcon1.setImage(image);
             imageIcon2.setImage(image);
             imageIcon3.setImage(image);
@@ -81,7 +100,8 @@ public class MainScreenController {
         }
         finally {
 			try {
-				strm.close();
+				if(strm!=null)
+						strm.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -89,18 +109,26 @@ public class MainScreenController {
         
         try {
             URL url = getClass().getResource("../resource/appIcon.png"); 
-            strm = url.openStream(); 
-            programIcon = new Image(strm);
+            if(url!=null) {
+	            strm = url.openStream(); 
+	            programIcon = new Image(strm);
+            }
+            else
+            {
+            	File file = new File("resource/appIcon.png");
+            	programIcon = new Image(file.toURI().toString());
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         finally {
-				try {
-					strm.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			try {
+				if(strm!=null)
+						strm.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
         }
 		
         helpBtn.setOnAction(new EventHandler<ActionEvent>() {
@@ -350,11 +378,6 @@ public class MainScreenController {
 		resField.setText(text);
 	}
 	
-	public void setResult2(String text)
-	{
-		//resField2.setText(text);
-	}
-	
 	public void hideClipMsg()
 	{
 		clipboardLabel.setVisible(false);
@@ -372,7 +395,9 @@ public class MainScreenController {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle(header);
             alert.setHeaderText(problem);
-            ((Stage)alert.getDialogPane().getScene().getWindow()).getIcons().add(programIcon);
+            
+            if(programIcon!=null)
+            	((Stage)alert.getDialogPane().getScene().getWindow()).getIcons().add(programIcon);
             
             alert.showAndWait();
         }
