@@ -1,6 +1,20 @@
 package application;
 
+import java.awt.AWTException;
+import java.awt.CheckboxMenuItem;
 import java.awt.Desktop;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,7 +25,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+
 import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -25,6 +43,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.input.Clipboard;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -41,11 +60,14 @@ public class MainScreenController {
 	private ImageView img1,img2,img3,img4,imageIcon1,imageIcon2,imageIcon3,imageIcon4;
 	
 	private Image programIcon;
+	private Stage stage;
+	private HUDManager hud;
 	
-	public void initialize()
-	{
+	public void LoadThings(Stage stage)
+	{		
 		clipboardLabel.setVisible(false);
-		
+		this.stage = stage;
+				
 		InputStream strm = null;
         try {
             URL url = getClass().getResource("../resource/image.png"); 
@@ -167,8 +189,9 @@ public class MainScreenController {
 			@Override
 			public void handle(ActionEvent arg0) {
 				clearFields();
+				//hud.HelloThere();
 			}
-			
+
 		});
 		
 		xBtn1.setOnAction(new EventHandler<ActionEvent>() {
@@ -267,7 +290,147 @@ public class MainScreenController {
 			
 		});
 		
+		SetUpTray();
 		
+	}
+	
+	
+	private void SetUpTray()
+	{
+		Platform.setImplicitExit(false);
+		
+		   //Check the SystemTray is supported
+	    if (!SystemTray.isSupported()) {
+	        System.out.println("SystemTray is not supported");
+	        return;
+	    }
+	    final PopupMenu popup = new PopupMenu();
+
+		URL url = getClass().getResource("../resource/appIcon.png"); 
+		java.awt.Image trayImage = Toolkit.getDefaultToolkit().getImage(url);
+
+		if(trayImage == null)
+		{
+			showAlertBox("ERROR","Tray loading error!");
+			return;
+		}
+		
+	    final TrayIcon trayIcon = new TrayIcon(trayImage);
+	    trayIcon.setImageAutoSize(true);
+
+	    final SystemTray tray = SystemTray.getSystemTray();
+
+	    // Create a pop-up menu components
+	    MenuItem showItem = new MenuItem("Show");
+	    //MenuItem name = new MenuItem("Triangulator");
+	    //CheckboxMenuItem showHUD = new CheckboxMenuItem("Show HUD");
+	    //CheckboxMenuItem cb2 = new CheckboxMenuItem("Set tooltip");
+	    /*Menu displayMenu = new Menu("Display");
+	    MenuItem errorItem = new MenuItem("Error");
+	    MenuItem warningItem = new MenuItem("Warning");
+	    MenuItem infoItem = new MenuItem("Info");
+	    MenuItem noneItem = new MenuItem("None");*/
+	    MenuItem exitItem = new MenuItem("Exit");
+
+	    //Add components to pop-up menu
+	    
+	    popup.add("Triangulator");
+	    popup.addSeparator();
+	    popup.add(showItem);
+	    //popup.add(showHUD);
+	    popup.addSeparator();
+	    //popup.add(cb2);
+	    //popup.addSeparator();
+	    /*popup.add(displayMenu);
+	    displayMenu.add(errorItem);
+	    displayMenu.add(warningItem);
+	    displayMenu.add(infoItem);
+	    displayMenu.add(noneItem);*/
+	    popup.add(exitItem);
+
+	    trayIcon.setPopupMenu(popup);
+
+	    try {
+	        tray.add(trayIcon);
+	    } catch (AWTException e) {
+	        System.out.println("TrayIcon could not be added.");
+	    }
+	    
+	    /*showHUD.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				System.out.println("TEST1");
+				hud.TestMe();
+			}
+	    	
+	    });*/
+	    
+	    trayIcon.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(e.getButton() == MouseEvent.BUTTON1)
+					ShowStage();
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+	    	
+	    });
+	    
+	    exitItem.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent arg0) {
+				Platform.exit();
+				System.exit(0);
+			}
+	    	
+	    });
+	    
+	    showItem.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent arg0) {
+				ShowStage();
+			}
+	    	
+	    });
+	}
+	
+	private void ShowStage()
+	{
+		//TOTO MAYBE ADD CLOSE ON ANOTHER CLICK IF STAGE IS OPEN ?
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				stage.show();
+			}
+			
+		});
 	}
 	
 	private double GetOreDistance(Image image)
@@ -386,6 +549,11 @@ public class MainScreenController {
 	public void showClipMsg()
 	{
 		clipboardLabel.setVisible(true);
+	}
+	
+	public void setHUDManager(HUDManager hud)
+	{
+		this.hud = hud;
 	}
 	
 	//Vytvara chybove hlasky pri prihlasovani
