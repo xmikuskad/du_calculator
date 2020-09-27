@@ -118,9 +118,15 @@ public class Solver {
 	private void finishIt(double x, double y, double z, MainScreenController con)
 	{
 		double s = Math.sqrt(x*x + y*y + z*z);
-		a = 90 - Math.acos(z/s)  * 180 / Math.PI;
-		b = Math.atan(y/x)* 180 / Math.PI;
+		double v = Math.sqrt(x*x + y*y);
+		a = Math.acos(z/s)  * 180 / Math.PI -90;
+		b = Math.acos(x/v)* 180 / Math.PI -180;
 		c = s - R;
+		
+		if(y<0)
+		{
+			b=-b;
+		}
 		
 		BigDecimal aa = new BigDecimal(a).setScale(4, RoundingMode.HALF_EVEN);
 		a=aa.doubleValue();
@@ -154,9 +160,9 @@ public class Solver {
 		{
 			
 			sValue[i] = R + positions.get(i).get(4);
-			aValue[i] = sValue[i] * Math.sin(Math.PI/2 - positions.get(i).get(2) * Math.PI/180) * Math.cos(positions.get(i).get(3) * Math.PI / 180);
-			bValue[i] = sValue[i] * Math.sin(Math.PI/2 - positions.get(i).get(2) * Math.PI/180) * Math.sin(positions.get(i).get(3) * Math.PI / 180);
-			cValue[i] = sValue[i] * Math.cos(Math.PI/2 - positions.get(i).get(2) * Math.PI/180);
+			aValue[i] = sValue[i] * Math.sin(positions.get(i).get(2) * Math.PI/180 + Math.PI/2) * Math.cos(positions.get(i).get(3) * Math.PI / 180 + Math.PI);
+			bValue[i] = sValue[i] * Math.sin(positions.get(i).get(2) * Math.PI/180 + Math.PI/2) * Math.sin(positions.get(i).get(3) * Math.PI / 180 + Math.PI);
+			cValue[i] = sValue[i] * Math.cos(positions.get(i).get(2) * Math.PI/180 + Math.PI/2);
 			
 		}
 		
