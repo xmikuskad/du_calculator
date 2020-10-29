@@ -1,100 +1,74 @@
 package application;
 
-import java.awt.AWTException;
-import java.awt.CheckboxMenuItem;
+
 import java.awt.Desktop;
-import java.awt.Menu;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelReader;
 import javafx.scene.input.Clipboard;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
 public class MainScreenController {
 
+	//xBtns are row clear btns and imgLoad is clipboard img load btn
 	@FXML
 	private Button solveButton, clearButton, xBtn1,xBtn2,xBtn3,xBtn4,imgLoad1,imgLoad2,imgLoad3,imgLoad4,helpBtn;
+	//posFields are positions and otherFields are ore distances
 	@FXML
 	private TextField resField, posField1, otherField1,posField2, otherField2,posField3, otherField3,posField4,otherField4;
 	@FXML
 	private Label clipboardLabel;
+	//imageIcon is clipboard and img is X button
 	@FXML
 	private ImageView img1,img2,img3,img4,imageIcon1,imageIcon2,imageIcon3,imageIcon4;
+	//This is display mode choice menu
 	@FXML
-	private ChoiceBox screenChoiceMenu;
+	private ChoiceBox<String> screenChoiceMenu;
 	private Image programIcon;
-	private Stage stage;
-	private HUDManager hud;
 	
 	final private String FULLSCREEN = "Fullscreen";
 	final private String WINDOWED = "Windowed";
 	
-	public void LoadThings(Stage stage)
+	ImageProcessing imgProcessing;
+	
+	//For easier setup
+	private Button[] clearBtns,imgLoadBtns;
+	private TextField[] posFields,otherFields;
+	
+	
+	public void LoadThings()
 	{				
-		clipboardLabel.setVisible(false);
-		this.stage = stage;
+		//Set references
+		imgProcessing = new ImageProcessing(this);
 		
+		clearBtns = new Button[] {xBtn1,xBtn2,xBtn3,xBtn4};
+		imgLoadBtns = new Button[] {imgLoad1,imgLoad2,imgLoad3,imgLoad4};
+		posFields = new TextField[] {posField1,posField2,posField3,posField4};
+		otherFields = new TextField[] {otherField1,otherField2,otherField3,otherField4};
+		
+		//UI setup
+		clipboardLabel.setVisible(false);
+		
+		//Set up display mode checkbox choices
 		screenChoiceMenu.getItems().add(FULLSCREEN);
 		screenChoiceMenu.getItems().add(WINDOWED);
 		screenChoiceMenu.setValue(FULLSCREEN);
-		
-		
-		/*screenChoiceMenu.setOnAction(new EventHandler() {
-
-			@Override
-			public void handle(Event arg0) {
-				System.out.println(screenChoiceMenu.getValue());
-				
-			}
 			
-		});*/
-		//System.out.println(screenChoiceMenu.getValue());
-		
-				
+		//Loading img icons of X buttons
 		InputStream strm = null;
         try {
             URL url = getClass().getResource("../resource/image.png"); 
@@ -126,6 +100,8 @@ public class MainScreenController {
 				}
         }
         
+        
+        //Loading img icons of clipboard buttons
         try {
             URL url = getClass().getResource("../resource/imgIcon.png"); 
             Image image = null;
@@ -156,6 +132,7 @@ public class MainScreenController {
 			}
         }
         
+        //Load icon of application
         try {
             URL url = getClass().getResource("../resource/appIcon.png"); 
             if(url!=null) {
@@ -180,6 +157,7 @@ public class MainScreenController {
 			}
         }
 		
+        //Open a help.txt file after clicking help button
         helpBtn.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -187,11 +165,8 @@ public class MainScreenController {
 				try {
 					File file = new File("help.txt");
 					
-					if (Desktop.isDesktopSupported()) {
+					if (Desktop.isDesktopSupported()) 
 					    Desktop.getDesktop().edit(file);
-					} else {
-					    // dunno, up to you to handle this
-					}
 				}
 				catch (Exception e)
 				{
@@ -202,6 +177,7 @@ public class MainScreenController {
 			
 		});
         
+        //Calculate ore distance
 		solveButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -211,477 +187,103 @@ public class MainScreenController {
 			
 		});
 		
+		//This will clear all field
 		clearButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent arg0) {
 				clearFields();
-				//hud.HelloThere();
 			}
 
 		});
-		
-		xBtn1.setOnAction(new EventHandler<ActionEvent>() {
 
-			@Override
-			public void handle(ActionEvent arg0) {
-				posField1.setText("");
-				otherField1.setText("");
-			}
-			
-		});
 		
-		xBtn2.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent arg0) {
-				posField2.setText("");
-				otherField2.setText("");
-			}
-			
-		});
-		
-		xBtn3.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent arg0) {
-				posField3.setText("");
-				otherField3.setText("");
-			}
-			
-		});
-		
-		xBtn4.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent arg0) {
-				posField4.setText("");
-				otherField4.setText("");
-			}
-			
-		});
-		
-		imgLoad1.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent arg0) {
-				Image img = Clipboard.getSystemClipboard().getImage();
-				if(img==null)
-					//otherField1.setText("NO IMG");
-					showAlertBox("ERROR!","No screenshot in clipboard!");
-				else
-					otherField1.setText(String.valueOf(GetOreDistance(img)));
-			}
-			
-		});
-		
-		imgLoad2.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent arg0) {
-				Image img = Clipboard.getSystemClipboard().getImage();
-				if(img==null)
-					//otherField2.setText("NO IMG");
-					showAlertBox("ERROR!","No screenshot in clipboard!");
-				else
-					otherField2.setText(String.valueOf(GetOreDistance(img)));
-			}
-			
-		});
-		
-		imgLoad3.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent arg0) {
-				Image img = Clipboard.getSystemClipboard().getImage();
-				if(img==null)
-					//otherField3.setText("NO IMG");
-					showAlertBox("ERROR!","No screenshot in clipboard!");
-				else
-					otherField3.setText(String.valueOf(GetOreDistance(img)));
-			}
-			
-		});
-		
-		imgLoad4.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent arg0) {
-				Image img = Clipboard.getSystemClipboard().getImage();
-				if(img==null)
-					//otherField4.setText("NO IMG");
-					showAlertBox("ERROR!","No screenshot in clipboard!");
-				else
-					otherField4.setText(String.valueOf(GetOreDistance(img)));
-			}
-			
-		});
-		
-		//SetUpTray();
-		
-	}
-		
-	private void SetUpTray()
-	{
-		Platform.setImplicitExit(false);
-		
-		   //Check the SystemTray is supported
-	    if (!SystemTray.isSupported()) {
-	        System.out.println("SystemTray is not supported");
-	        return;
-	    }
-	    final PopupMenu popup = new PopupMenu();
-
-		URL url = getClass().getResource("../resource/appIcon.png"); 
-		java.awt.Image trayImage = Toolkit.getDefaultToolkit().getImage(url);
-
-		if(trayImage == null)
+		//Setting up clear btns (X) functionality
+		for(int i=0; i<clearBtns.length;i++)
 		{
-			showAlertBox("ERROR","Tray loading error!");
-			return;
-		}
-		
-	    final TrayIcon trayIcon = new TrayIcon(trayImage);
-	    trayIcon.setImageAutoSize(true);
+			final int tmp = i; //Because of enclosed scope I cant use variable i directly
+			clearBtns[i].setOnAction(new EventHandler<ActionEvent>() {
 
-	    final SystemTray tray = SystemTray.getSystemTray();
-
-	    // Create a pop-up menu components
-	    MenuItem showItem = new MenuItem("Show");
-	    //MenuItem name = new MenuItem("Triangulator");
-	    //CheckboxMenuItem showHUD = new CheckboxMenuItem("Show HUD");
-	    //CheckboxMenuItem cb2 = new CheckboxMenuItem("Set tooltip");
-	    /*Menu displayMenu = new Menu("Display");
-	    MenuItem errorItem = new MenuItem("Error");
-	    MenuItem warningItem = new MenuItem("Warning");
-	    MenuItem infoItem = new MenuItem("Info");
-	    MenuItem noneItem = new MenuItem("None");*/
-	    MenuItem exitItem = new MenuItem("Exit");
-
-	    //Add components to pop-up menu
-	    
-	    popup.add("Triangulator");
-	    popup.addSeparator();
-	    popup.add(showItem);
-	    //popup.add(showHUD);
-	    popup.addSeparator();
-	    //popup.add(cb2);
-	    //popup.addSeparator();
-	    /*popup.add(displayMenu);
-	    displayMenu.add(errorItem);
-	    displayMenu.add(warningItem);
-	    displayMenu.add(infoItem);
-	    displayMenu.add(noneItem);*/
-	    popup.add(exitItem);
-
-	    trayIcon.setPopupMenu(popup);
-
-	    try {
-	        tray.add(trayIcon);
-	    } catch (AWTException e) {
-	        System.out.println("TrayIcon could not be added.");
-	    }
-	    
-	    /*showHUD.addItemListener(new ItemListener() {
-
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				System.out.println("TEST1");
-				hud.TestMe();
-			}
-	    	
-	    });*/
-	    
-	    trayIcon.addMouseListener(new MouseListener() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if(e.getButton() == MouseEvent.BUTTON1)
-					ShowStage();
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-	    	
-	    });
-	    
-	    exitItem.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent arg0) {
-				Platform.exit();
-				System.exit(0);
-			}
-	    	
-	    });
-	    
-	    showItem.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent arg0) {
-				ShowStage();
-			}
-	    	
-	    });
-	}
-	
-	private void ShowStage()
-	{
-		//TOTO MAYBE ADD CLOSE ON ANOTHER CLICK IF STAGE IS OPEN ?
-		Platform.runLater(new Runnable() {
-
-			@Override
-			public void run() {
-				stage.show();
-			}
-			
-		});
-	}
-	
-	//Debug used for getting RGB info
-	private void saveRGB(Image image)
-	{
-		BufferedWriter writer;
-		//Logging
-		try {
-		    writer = new BufferedWriter(
-                    new FileWriter("debug.txt", true)  //Set true for append mode
-                ); 
-		} catch (Exception e1) {
-			e1.printStackTrace();
-			return;
-		}
-		
-		//	1421/580
-		int baseHeight = 580;
-		int heightTracker = 580;
-		int baseWidth = 1421;
-		while(heightTracker >234)
-		{
-			PixelReader pReader = image.getPixelReader();
-			Color color = pReader.getColor(baseWidth,heightTracker);
-			
-			int red1 = (int) (color.getRed()*255);
-			int red2 = (int) (color.getBlue()*255);
-			int red3 = (int) (color.getGreen()*255);
-			
-			
-			try {
-				writer.write(String.valueOf(red1)+"\t"+String.valueOf(red2)+"\t"+String.valueOf(red3)+"\n");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			heightTracker--;
-		}
-		
-		
-		try {
-			writer.write("\n\n\n\n");
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private int GetFinalPos(int heightTracker,Image image, PixelReader pReader, int baseWidth)
-	{
-		
-		int count =0;
-		while(true) {
-			heightTracker--;
-			count++;
-			Color color = pReader.getColor(baseWidth,heightTracker);
-			Color nextColor = pReader.getColor(baseWidth,heightTracker-1);
-			
-			double blue = color.getBlue()*255 + nextColor.getBlue()*255;
-			if(blue < 388)
-			{
-				System.out.println("Count: "+count);
-				return count;
-			}
-		}
-	}
-	
-	private double GetOreDistance(Image image)
-	{
-		//16:9
-		double ratioX = 2843.0/3840.0;
-		double ratioY = 1163.0/2160.0;
-		
-		double height;
-		int baseHeight,baseWidth,heightTracker;
-		
-		
-		if(screenChoiceMenu.getValue().equals(WINDOWED))
-		{
-			height = image.getHeight()-32;
-			baseHeight = (int)(ratioY * height) +31;
-			baseWidth = (int)Math.round(ratioX * (image.getWidth()-2))+1;
-			System.out.println("WINDOWED MODE!");
-		}
-		else
-		{
-			height = image.getHeight();
-			baseHeight = (int)(ratioY * height);
-			baseWidth = (int)Math.round(ratioX * image.getWidth());
-		}
-		heightTracker = baseHeight;
-		
-		while(heightTracker >1)
-		{	
-			PixelReader pReader = image.getPixelReader();
-			Color color = pReader.getColor(baseWidth,heightTracker);
-			Color nextColor = pReader.getColor(baseWidth,heightTracker-1);
-			
-			double blue = color.getBlue()*255 + nextColor.getBlue()*255;
-			if(blue > 388)
-			{
-				int count = GetFinalPos(heightTracker,image,pReader,baseWidth);
-				
-				if(count >3) {
-					heightTracker -= count/2;
-					break;
+				@Override
+				public void handle(ActionEvent arg0) {
+					//Clear fields
+					posFields[tmp].setText("");
+					otherFields[tmp].setText("");
 				}
-			}
-			
-			heightTracker--;
+				
+			});
 		}
 		
-		int finalHeight = baseHeight - heightTracker;
-		double finalAmount = 0;
-		double stepper = 172.0/2160.0 * height;
-		finalAmount = (100.0/stepper) * finalHeight;
-		
-		System.out.println("finalAmount "+finalAmount+"\n");
-		System.out.println("finalHeight "+finalHeight +"\n");
-		System.out.println("baseHeight "+baseHeight +"\n");
-		System.out.println("baseWidth"+baseWidth+"\n");
-		System.out.println("height "+height +"\n");
-		System.out.println("ratioY "+ratioY+"\n");
-		/*double stepper = 172/2160 * height;
-		//100
-		if(finalHeight > stepper) {
-			finalHeight -= 85;
-			finalAmount +=100;
-		}
-		else
+		//Set up copy image from clipboard functionality
+		for(int i=0; i<imgLoadBtns.length;i++)
 		{
-			finalAmount += (100.0/85.0) * finalHeight;
-			finalHeight = 0;
+			final int tmp = i; //Because of enclosed scope I cant use variable i directly
+			imgLoadBtns[i].setOnAction(new EventHandler<ActionEvent>() {
+
+				@Override
+				public void handle(ActionEvent arg0) {
+					//Get image from clipboard
+					Image img = Clipboard.getSystemClipboard().getImage();
+					if(img==null)
+						showAlertBox("ERROR!","No screenshot in clipboard!");
+					else{
+						//Calculate distance of ore and display it
+						double oreDistance = imgProcessing.GetOreDistance(img,screenChoiceMenu.getValue().equals(WINDOWED));
+						otherFields[tmp].setText(String.valueOf(oreDistance));
+					}
+				}
+				
+			});
 		}
 		
-		//200
-		stepper = 173/2160*height;
-		if(finalHeight > 89) {
-			finalHeight -= 89;
-			finalAmount +=100;
-		}
-		else
-		{
-			finalAmount += (100.0/89.0) * finalHeight;
-			finalHeight = 0;
-		}
-		
-		//300
-		stepper = 172/2160*height;
-		if(finalHeight > 87) {
-			finalHeight -= 87;
-			finalAmount +=100;
-		}
-		else
-		{
-			finalAmount += (100.0/87.0) * finalHeight;
-			finalHeight = 0;
-		}
-		
-		//400+
-		finalAmount += (100.0/stepper) * finalHeight;*/
-		
-		
-		if(finalAmount < 10)
-		{
-			showAlertBox("ERROR!","Scanner lines not found! Check instructions!");
-			finalAmount = 0;
-		}
-		
-		return finalAmount;		
 	}
 		
+	//Start calculations of ore
 	private void solveIt()
 	{
-	
 		Solver solver = new Solver();
 		
 		List<String> varList = new ArrayList<String>();
-		varList.add(posField1.getText());
-		varList.add(otherField1.getText());
-		varList.add(posField2.getText());
-		varList.add(otherField2.getText());
-		varList.add(posField3.getText());
-		varList.add(otherField3.getText());
-		varList.add(posField4.getText());
-		varList.add(otherField4.getText());
 		
+		//Getting info from textfields to list
+		for(int i=0; i<posFields.length;i++)
+		{
+			varList.add(posFields[i].getText());
+			varList.add(otherFields[i].getText());
+		}
+		
+		//Calculate final position
 		solver.startSolve(varList,this);
 	}
 	
+	//Clear all text fields
 	private void clearFields()
-	{
-		posField1.setText("");
-		posField2.setText("");
-		posField3.setText("");
-		posField4.setText("");
-		otherField1.setText("");
-		otherField2.setText("");
-		otherField3.setText("");
-		otherField4.setText("");
+	{		
+		for(int i=0; i<posFields.length;i++)
+		{
+			posFields[i].setText("");
+			otherFields[i].setText("");
+
+		}		
+		
 		resField.setText("");
-		clipboardLabel.setVisible(false);
+		setClipMsg(false);
 	}
 	
+	//Show result of ore calculation in result textfield
 	public void setResult(String text)
 	{
 		resField.setText(text);
 	}
 	
-	public void hideClipMsg()
+	//Showing the message that distance was copied to clipboard
+	public void setClipMsg(boolean shouldShow)
 	{
-		clipboardLabel.setVisible(false);
+		clipboardLabel.setVisible(shouldShow);
 	}
 	
-	public void showClipMsg()
-	{
-		clipboardLabel.setVisible(true);
-	}
 	
-	public void setHUDManager(HUDManager hud)
-	{
-		this.hud = hud;
-	}
-	
-	//Vytvara chybove hlasky pri prihlasovani
+	//Showing error messages in a box - this will be changed in future
 	public void showAlertBox(String header,String problem)
 	{
 		Platform.runLater(() -> {

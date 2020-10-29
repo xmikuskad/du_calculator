@@ -21,8 +21,8 @@ import javafx.scene.layout.VBox;
 public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
-		try {	
-			
+		try {		
+			//Creating main screen 
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/application/MainScreen.fxml"));
 			VBox root = (VBox) loader.load();
 			Scene scene = new Scene(root);
@@ -30,32 +30,23 @@ public class Main extends Application {
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("Triangulator");
 			
+			//Setting controller for main screen
 			MainScreenController controller = (MainScreenController)loader.getController();
-			controller.LoadThings(primaryStage);
-			//Testing HUD
-		    //primaryStage.initStyle(StageStyle.TRANSPARENT);
-		    //primaryStage.setAlwaysOnTop(true);
+			controller.LoadThings();
 			
 			primaryStage.show();
-			//TESTING!
-			primaryStage.setOnCloseRequest(event -> {
-				primaryStage.hide();
-			});
 			
+			//This is for future use. We are planning on doing ingame HUD. Right now useless
 			try {
 				// Get the logger for "com.github.kwhat.jnativehook" and set the level to off.
 				Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
 				logger.setLevel(Level.OFF);
 				logger.setUseParentHandlers(false);
-				
-				//GlobalScreen.registerNativeHook();
-				//GlobalScreen.addNativeKeyListener(new MyKeyListener(controller));
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-			//Loading icon
+			//Loading application icon
 			InputStream strm = null;
 	        try {
 	            URL url = getClass().getResource("../resource/appIcon.png"); 

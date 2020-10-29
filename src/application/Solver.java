@@ -28,7 +28,6 @@ public class Solver {
 	List<List<Double>> positions = new ArrayList<List<Double>>();
 	List<Double> other = new ArrayList<Double>();
 
-	//Prve pocty
 	double[] sValue = new double[FIELD_COUNT];
 	double[] aValue = new double[FIELD_COUNT];
 	double[] bValue = new double[FIELD_COUNT];
@@ -45,11 +44,11 @@ public class Solver {
 		    writer = new BufferedWriter(
                     new FileWriter(fileName, true)  //Set true for append mode
                 ); 
-			writeToFile("\nNew logging",Instant.now().toString());
+			writeToFile("\n----- New logging",Instant.now().toString()+" -----");
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			con.showAlertBox("Error","Logging failed!");		
-			con.hideClipMsg();
+			con.setClipMsg(false);
 			return;
 		}
 		
@@ -59,7 +58,7 @@ public class Solver {
 		} catch (FileNotFoundException e2) {
 			e2.printStackTrace();
 			con.setResult("File reading failed");
-			con.hideClipMsg();
+			con.setClipMsg(false);
 			writeToFile("ERROR!","Cannot open fileReader.txt");
 		}
 		
@@ -69,10 +68,9 @@ public class Solver {
 		}
 		catch(Exception e)
 		{
-			System.out.println("Wrong input!");
 			con.setResult("");
 			con.showAlertBox("ERROR!","Input problem!\nProblem: "+e.getMessage());
-			con.hideClipMsg();
+			con.setClipMsg(false);
 			e.printStackTrace();
 			writeToFile("ERROR!","Input problem! MSG: "+e.getMessage());
 			
@@ -87,21 +85,20 @@ public class Solver {
 		
 		//Making calculations
 		try {
-			prepare(); //OK
+			prepare();
 			
 			makeCalculations();
 			
 			finishIt(x1,y1,z1,con);
 			
-			con.showClipMsg();
+			con.setClipMsg(true);
 		}
 		catch(Exception e)
 		{
-			System.out.println("Calculation problem!");
 			con.showAlertBox("Error","Calculation problem!");	
 			con.setResult("");
 			e.printStackTrace();
-			con.hideClipMsg();
+			con.setClipMsg(false);
 			writeToFile("ERROR","Calculation problem!");
 		}
 		finally {
@@ -115,6 +112,98 @@ public class Solver {
 		
 	}
 	
+	//First part of calculations - converting coordinates from spherical to cartesian
+	private void prepare()
+	{
+		for(int i=0; i<FIELD_COUNT;i++)
+		{		
+			sValue[i] = R + positions.get(i).get(4);
+			aValue[i] = sValue[i] * Math.sin(positions.get(i).get(2) * Math.PI/180 + Math.PI/2) * Math.cos(positions.get(i).get(3) * Math.PI / 180 + Math.PI);
+			bValue[i] = sValue[i] * Math.sin(positions.get(i).get(2) * Math.PI/180 + Math.PI/2) * Math.sin(positions.get(i).get(3) * Math.PI / 180 + Math.PI);
+			cValue[i] = sValue[i] * Math.cos(positions.get(i).get(2) * Math.PI/180 + Math.PI/2);
+			
+		}
+		
+		//Logging
+		for(int i=0;i<FIELD_COUNT;i++)
+			writeToFile("A",String.valueOf(aValue[i]));
+		
+		for(int i=0;i<FIELD_COUNT;i++)
+			writeToFile("B",String.valueOf(bValue[i]));
+		
+		for(int i=0;i<FIELD_COUNT;i++)
+			writeToFile("C",String.valueOf(cValue[i]));
+		
+		for(int i=0;i<FIELD_COUNT;i++)
+			writeToFile("S",String.valueOf(sValue[i]));
+	}
+
+	//Middle part of calculations - finding intersection of 4 spheres
+	private void makeCalculations() throws Exception
+	{
+		double[] deltaA = new double[3];
+		double[] deltaB = new double[3];
+		double[] deltaC = new double[3];	
+		double p1,p2,p3;
+		double D1,D2,A1,A2,B1,B2;
+		
+		for(int i =0; i<3; i++)
+		{
+			deltaA[i] = aValue[0] - aValue[1+i]; 
+			deltaB[i] = bValue[0] - bValue[1+i]; 
+			deltaC[i] = cValue[0] - cValue[1+i]; 
+		}	
+		
+		p1 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(1) * other.get(1) + aValue[1] * aValue[1] + bValue[1] * bValue[1] + cValue[1] * cValue[1]; 
+		p2 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(2) * other.get(2) + aValue[2] * aValue[2] + bValue[2] * bValue[2] + cValue[2] * cValue[2];
+		p3 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(3) * other.get(3) + aValue[3] * aValue[3] + bValue[3] * bValue[3] + cValue[3] * cValue[3];
+				
+		A1 = -4*deltaA[0]*deltaC[1] + 4*deltaA[1]*deltaC[0];
+		B1 = -4*deltaB[0]*deltaC[1] + 4*deltaB[1]*deltaC[0];
+		A2 = -4*deltaA[0]*deltaC[2] + 4*deltaA[2]*deltaC[0];
+		B2 = -4*deltaB[0]*deltaC[2] + 4*deltaB[2]*deltaC[0];
+		D1 =(2*p1*deltaC[1] - 2*p2*deltaC[0]);
+		D2 =(2*p1*deltaC[2] - 2*p3*deltaC[0]);
+		
+		/*writeToFile("A1",String.valueOf(A1));
+		writeToFile("B1",String.valueOf(B1));
+		writeToFile("A2",String.valueOf(A2));
+		writeToFile("B2",String.valueOf(B2));
+		writeToFile("D1",String.valueOf(D1));
+		writeToFile("D2",String.valueOf(D2));*/
+		
+		x1 = (D1*B2 - D2*B1) / (A1*B2 - A2*B1);
+		y1 = (D1 - A1*x1) / B1;
+		z1 = (p1 +2*deltaA[0]*x1 + 2*deltaB[0]*y1) / (-2*deltaC[0]);
+		
+		writeToFile("x1",String.valueOf(x1));
+		writeToFile("y1",String.valueOf(y1));
+		writeToFile("z1",String.valueOf(z1));
+		
+		//Check for bullshit result
+		double max = Math.max(Math.max(other.get(0),other.get(1)), Math.max(other.get(2),other.get(3)));
+		
+		double min = 1000;
+		int min_index = 0;
+		for(int i=0;i<FIELD_COUNT;i++)
+		{
+			if(other.get(i) < min)
+			{
+				min = other.get(i);
+				min_index = i;
+			}
+		}
+		
+		double tmp = Math.pow(x1-aValue[min_index],2) + Math.pow(y1-bValue[min_index],2) + Math.pow(z1-cValue[min_index],2);
+		
+		if(tmp > max*max)
+		{
+			writeToFile("Bullshit check failed, sorry","");
+			throw new Exception("BULLSHIT CHECK!");
+		}
+	}
+	
+	//Last part of calculations - converting from cartesian coordinates back to spherical
 	private void finishIt(double x, double y, double z, MainScreenController con)
 	{
 		double s = Math.sqrt(x*x + y*y + z*z);
@@ -146,104 +235,17 @@ public class Solver {
 
 		writeToFile("Final pos is",result);
 		
+		//Set result to textfield
 		con.setResult(result);
-			
+		
+		//Save result to clipboards
 		StringSelection stringSelection = new StringSelection(result);
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		clipboard.setContents(stringSelection, null);
 		
 	}
 	
-	private void prepare()
-	{
-		for(int i=0; i<FIELD_COUNT;i++)
-		{
-			
-			sValue[i] = R + positions.get(i).get(4);
-			aValue[i] = sValue[i] * Math.sin(positions.get(i).get(2) * Math.PI/180 + Math.PI/2) * Math.cos(positions.get(i).get(3) * Math.PI / 180 + Math.PI);
-			bValue[i] = sValue[i] * Math.sin(positions.get(i).get(2) * Math.PI/180 + Math.PI/2) * Math.sin(positions.get(i).get(3) * Math.PI / 180 + Math.PI);
-			cValue[i] = sValue[i] * Math.cos(positions.get(i).get(2) * Math.PI/180 + Math.PI/2);
-			
-		}
-		
-		for(int i=0;i<FIELD_COUNT;i++)
-			writeToFile("A",String.valueOf(aValue[i]));
-		
-		for(int i=0;i<FIELD_COUNT;i++)
-			writeToFile("B",String.valueOf(bValue[i]));
-		
-		for(int i=0;i<FIELD_COUNT;i++)
-			writeToFile("C",String.valueOf(cValue[i]));
-		
-		for(int i=0;i<FIELD_COUNT;i++)
-			writeToFile("S",String.valueOf(sValue[i]));
-
-	}
-
-	private void makeCalculations() throws Exception
-	{
-		double[] deltaA = new double[3];
-		double[] deltaB = new double[3];
-		double[] deltaC = new double[3];	
-		double p1,p2,p3;
-		double D1,D2,A1,A2,B1,B2;
-		
-		for(int i =0; i<3; i++)
-		{
-			deltaA[i] = aValue[0] - aValue[1+i]; 
-			deltaB[i] = bValue[0] - bValue[1+i]; 
-			deltaC[i] = cValue[0] - cValue[1+i]; 
-		}	
-		
-		p1 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(1) * other.get(1) + aValue[1] * aValue[1] + bValue[1] * bValue[1] + cValue[1] * cValue[1]; 
-		p2 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(2) * other.get(2) + aValue[2] * aValue[2] + bValue[2] * bValue[2] + cValue[2] * cValue[2];
-		p3 = other.get(0) * other.get(0) - aValue[0] * aValue[0] - bValue[0] * bValue[0] - cValue[0] * cValue[0] - other.get(3) * other.get(3) + aValue[3] * aValue[3] + bValue[3] * bValue[3] + cValue[3] * cValue[3];
-				
-		A1 = -4*deltaA[0]*deltaC[1] + 4*deltaA[1]*deltaC[0];
-		B1 = -4*deltaB[0]*deltaC[1] + 4*deltaB[1]*deltaC[0];
-		A2 = -4*deltaA[0]*deltaC[2] + 4*deltaA[2]*deltaC[0];
-		B2 = -4*deltaB[0]*deltaC[2] + 4*deltaB[2]*deltaC[0];
-		D1 =(2*p1*deltaC[1] - 2*p2*deltaC[0]);
-		D2 =(2*p1*deltaC[2] - 2*p3*deltaC[0]);
-		
-		writeToFile("A1",String.valueOf(A1));
-		writeToFile("B1",String.valueOf(B1));
-		writeToFile("A2",String.valueOf(A2));
-		writeToFile("B2",String.valueOf(B2));
-		writeToFile("D1",String.valueOf(D1));
-		writeToFile("D2",String.valueOf(D2));
-		
-		x1 = (D1*B2 - D2*B1) / (A1*B2 - A2*B1);
-		y1 = (D1 - A1*x1) / B1;
-		z1 = (p1 +2*deltaA[0]*x1 + 2*deltaB[0]*y1) / (-2*deltaC[0]);
-		
-		writeToFile("x1",String.valueOf(x1));
-		writeToFile("y1",String.valueOf(y1));
-		writeToFile("z1",String.valueOf(z1));
-		
-		//Check for bullshit
-		double max = Math.max(Math.max(other.get(0),other.get(1)), Math.max(other.get(2),other.get(3)));
-		
-		double min = 1000;
-		int min_index = 0;
-		for(int i=0;i<FIELD_COUNT;i++)
-		{
-			if(other.get(i) < min)
-			{
-				min = other.get(i);
-				min_index = i;
-			}
-		}
-		
-		double tmp = Math.pow(x1-aValue[min_index],2) + Math.pow(y1-bValue[min_index],2) + Math.pow(z1-cValue[min_index],2);
-		
-		if(tmp > max*max)
-		{
-			writeToFile("Bullshit check failed, sorry","");
-			throw new Exception("BULLSHIT CHECK!");
-		}
-	}
-	
+	//Get right value of planet surface depending on position entered
 	private double getRValue(String value1, String value2) throws Exception
 	{
 		List<String> list = new ArrayList<String>();
@@ -256,6 +258,7 @@ public class Solver {
 		
 		double value = -1;
 		
+		//Parsing of readerFile
 		for(String str:list) {
 			String tmpValue = str.split("=")[1];
 			String val1 = str.split("=")[0].split(",")[0];
@@ -272,14 +275,15 @@ public class Solver {
 		return value;
 	}
 	
+	//Check input formats and try to parse it and save to list
 	private void checkInput(List<String> varList, MainScreenController con) throws Exception
 	{
 		for(int i =0;i<FIELD_COUNT;i++) {
 		
 			positions.add(new ArrayList<Double>());
 			
-			String pos = varList.get(i*2);
-			String otherVar = varList.get(i*2 +1);
+			String pos = varList.get(i*2); //example pos:{a,b,c,d,e}
+			String otherVar = varList.get(i*2 +1); //example 150.23
 			
 			if(pos.isEmpty())
 			{
@@ -290,6 +294,9 @@ public class Solver {
 				throw new Exception("Ore distance "+(i+1)+" is empty!");
 			}
 			
+			//Logging
+			writeToFile("pos "+(i+1), pos);
+			writeToFile("distance "+(i+1), otherVar);
 			
 			//Get inputs from string
 			List<String> tmp = Arrays.asList(pos.split("\\{"));
@@ -299,11 +306,11 @@ public class Solver {
 				throw new Exception("Position "+(i+1)+" is badly formatted!");
 			}
 			
-			String positionsRaw = Arrays.asList(tmp.get(1).split("\\}")).get(0);
+			String positionsRaw = Arrays.asList(tmp.get(1).split("\\}")).get(0); //example a,b,c,d,e
 					
-			List<String> tmpList = Arrays.asList(positionsRaw.split(","));
+			List<String> tmpList = Arrays.asList(positionsRaw.split(",")); //put a,b,c,d,e to list
 			
-			//Saving values to list
+			//Saving positions to list
 			try {
 				for(String str : tmpList) {
 					positions.get(i).add(Double.valueOf(str));
@@ -314,6 +321,7 @@ public class Solver {
 				throw new Exception("Position "+(i+1)+" is badly formatted!");
 			}
 			
+			//Saving distances to list
 			try {
 				other.add(Double.valueOf(otherVar));		
 			}
@@ -331,10 +339,12 @@ public class Solver {
 					throw new Exception("Reader file not found");
 				}
 				R = getRValue(tmpList.get(0),tmpList.get(1));
+				
 				if(R<0)
 				{
 					R=120000;
-					con.showAlertBox("Warning!","Calculations for this planet may be inaccurate!");					
+					con.showAlertBox("Warning!","Calculations for this planet will be inaccurate!");
+					writeToFile("WARNING!", "Didnt find R value in readerFile");
 				}
 			}
 		}
@@ -348,14 +358,15 @@ public class Solver {
 		}
 		
 		reorderBySmallest();
-		
 	}
 	
+	
+	//Reorde list by smalled ore distance positions. Should help with accuracy of calculation
 	private void reorderBySmallest() throws Exception
 	{		
 		for(int i=0;i<3;i++)
 		{
-			double min = 99999.0;
+			double min = 99999.0; //This is bad but values should never be this big
 			int minIndex = -1;
 			for(int j=i;j<4;j++)
 			{
@@ -380,6 +391,7 @@ public class Solver {
 		
 	}
 
+	//Check if log isnt too big. If it is, delete it
 	private void checkFileSize()
 	{		
 		File file = new File(fileName);
