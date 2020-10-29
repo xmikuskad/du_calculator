@@ -1,0 +1,24 @@
+
+New logging 2020-10-28T22:15:13.428695Z
+ERROR! Input problem! MSG: Position 1 is empty
+
+New logging 2020-10-28T22:15:33.166671700Z
+ERROR! Input problem! MSG: Position 1 is empty
+
+New logging 2020-10-28T22:15:42.678542100Z
+ERROR! Input problem! MSG: Position 1 is empty
+
+New logging 2020-10-28T22:15:58.461433900Z
+ERROR! Input problem! MSG: Ore distance 1 is empty!
+
+New logging 2020-10-28T22:16:12.191681600Z
+ERROR! Input problem! MSG: Position 1 is badly formatted!
+
+New logging 2020-10-28T22:16:16.934447300Z
+ERROR! Input problem! MSG: Position 1 is badly formatted!
+
+New logging 2020-10-28T22:16:23.118641700Z
+ERROR! Input problem! MSG: Position 1 is badly formatted!
+
+New logging 2020-10-28T22:16:35.351239200Z
+ERROR! Input problem! MSG: Position 1 is badly formatted!

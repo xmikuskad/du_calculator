@@ -16,12 +16,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +67,7 @@ public class MainScreenController {
 	private HUDManager hud;
 	
 	public void LoadThings(Stage stage)
-	{		
+	{				
 		clipboardLabel.setVisible(false);
 		this.stage = stage;
 				
@@ -433,26 +436,96 @@ public class MainScreenController {
 		});
 	}
 	
-	private double GetOreDistance(Image image)
+	private void saveRGB(Image image)
 	{
+		BufferedWriter writer;
+		//Logging
+		try {
+		    writer = new BufferedWriter(
+                    new FileWriter("debug.txt", true)  //Set true for append mode
+                ); 
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			return;
+		}
+		
 		//	1421/580
 		int baseHeight = 580;
 		int heightTracker = 580;
 		int baseWidth = 1421;
-		while(heightTracker >1)
+		while(heightTracker >234)
 		{
+			PixelReader pReader = image.getPixelReader();
+			Color color = pReader.getColor(baseWidth,heightTracker);
+			
+			int red1 = (int) (color.getRed()*255);
+			int red2 = (int) (color.getBlue()*255);
+			int red3 = (int) (color.getGreen()*255);
+			
+			
+			try {
+				writer.write(String.valueOf(red1)+"\t"+String.valueOf(red2)+"\t"+String.valueOf(red3)+"\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			heightTracker--;
+		}
+		
+		
+		try {
+			writer.write("\n\n\n\n");
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private int GetFinalPos(int heightTracker,Image image, PixelReader pReader, int baseWidth)
+	{
+		
+		int count =0;
+		while(true) {
+			heightTracker--;
+			count++;
+			Color color = pReader.getColor(baseWidth,heightTracker);
+			Color nextColor = pReader.getColor(baseWidth,heightTracker-1);
+			
+			double blue = color.getBlue()*255 + nextColor.getBlue()*255;
+			if(blue < 388)
+			{
+				System.out.println("Count: "+count);
+				return count;
+			}
+		}
+	}
+	
+	private double GetOreDistance(Image image)
+	{
+		//16:9
+		double ratioX = 2843.0/3840.0;
+		double ratioY = 1163.0/2160.0;
+		
+		double height = image.getHeight();
+		int baseHeight = (int)(ratioY * height);
+		int heightTracker = (int)(ratioY * height);
+		int baseWidth = (int)Math.round((ratioX * image.getWidth()));
+		
+		while(heightTracker >1)
+		{	
 			PixelReader pReader = image.getPixelReader();
 			Color color = pReader.getColor(baseWidth,heightTracker);
 			Color nextColor = pReader.getColor(baseWidth,heightTracker-1);
 			
-			double red1 = color.getRed()*255;
-			double red2 = nextColor.getRed()*255;
-			
-			if((red1 >=147 || red1 <=85) && (red2 >=147 || red2 <=85))
+			double blue = color.getBlue()*255 + nextColor.getBlue()*255;
+			if(blue > 388)
 			{
+				int count = GetFinalPos(heightTracker,image,pReader,baseWidth);
 				
-				heightTracker -=7;
-				break;
+				if(count >3) {
+					heightTracker -= count/2;
+					break;
+				}
 			}
 			
 			heightTracker--;
@@ -460,9 +533,18 @@ public class MainScreenController {
 		
 		int finalHeight = baseHeight - heightTracker;
 		double finalAmount = 0;
+		double stepper = 172.0/2160.0 * height;
+		finalAmount = (100.0/stepper) * finalHeight;
 		
+		System.out.println("finalAmount "+finalAmount+"\n");
+		System.out.println("finalHeight "+finalHeight +"\n");
+		System.out.println("baseHeight "+baseHeight +"\n");
+		System.out.println("baseWidth"+baseWidth+"\n");
+		System.out.println("height "+height +"\n");
+		System.out.println("ratioY "+ratioY+"\n");
+		/*double stepper = 172/2160 * height;
 		//100
-		if(finalHeight > 85) {
+		if(finalHeight > stepper) {
 			finalHeight -= 85;
 			finalAmount +=100;
 		}
@@ -471,7 +553,9 @@ public class MainScreenController {
 			finalAmount += (100.0/85.0) * finalHeight;
 			finalHeight = 0;
 		}
+		
 		//200
+		stepper = 173/2160*height;
 		if(finalHeight > 89) {
 			finalHeight -= 89;
 			finalAmount +=100;
@@ -481,7 +565,9 @@ public class MainScreenController {
 			finalAmount += (100.0/89.0) * finalHeight;
 			finalHeight = 0;
 		}
+		
 		//300
+		stepper = 172/2160*height;
 		if(finalHeight > 87) {
 			finalHeight -= 87;
 			finalAmount +=100;
@@ -491,8 +577,9 @@ public class MainScreenController {
 			finalAmount += (100.0/87.0) * finalHeight;
 			finalHeight = 0;
 		}
+		
 		//400+
-		finalAmount += (100.0/86.0) * finalHeight;
+		finalAmount += (100.0/stepper) * finalHeight;*/
 		
 		
 		if(finalAmount < 10)
