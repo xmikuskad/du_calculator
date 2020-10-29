@@ -34,11 +34,14 @@ import javax.swing.ImageIcon;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -61,15 +64,36 @@ public class MainScreenController {
 	private Label clipboardLabel;
 	@FXML
 	private ImageView img1,img2,img3,img4,imageIcon1,imageIcon2,imageIcon3,imageIcon4;
-	
+	@FXML
+	private ChoiceBox screenChoiceMenu;
 	private Image programIcon;
 	private Stage stage;
 	private HUDManager hud;
+	
+	final private String FULLSCREEN = "Fullscreen";
+	final private String WINDOWED = "Windowed";
 	
 	public void LoadThings(Stage stage)
 	{				
 		clipboardLabel.setVisible(false);
 		this.stage = stage;
+		
+		screenChoiceMenu.getItems().add(FULLSCREEN);
+		screenChoiceMenu.getItems().add(WINDOWED);
+		screenChoiceMenu.setValue(FULLSCREEN);
+		
+		
+		/*screenChoiceMenu.setOnAction(new EventHandler() {
+
+			@Override
+			public void handle(Event arg0) {
+				System.out.println(screenChoiceMenu.getValue());
+				
+			}
+			
+		});*/
+		//System.out.println(screenChoiceMenu.getValue());
+		
 				
 		InputStream strm = null;
         try {
@@ -293,11 +317,10 @@ public class MainScreenController {
 			
 		});
 		
-		SetUpTray();
+		//SetUpTray();
 		
 	}
-	
-	
+		
 	private void SetUpTray()
 	{
 		Platform.setImplicitExit(false);
@@ -436,6 +459,7 @@ public class MainScreenController {
 		});
 	}
 	
+	//Debug used for getting RGB info
 	private void saveRGB(Image image)
 	{
 		BufferedWriter writer;
@@ -506,10 +530,24 @@ public class MainScreenController {
 		double ratioX = 2843.0/3840.0;
 		double ratioY = 1163.0/2160.0;
 		
-		double height = image.getHeight();
-		int baseHeight = (int)(ratioY * height);
-		int heightTracker = (int)(ratioY * height);
-		int baseWidth = (int)Math.round((ratioX * image.getWidth()));
+		double height;
+		int baseHeight,baseWidth,heightTracker;
+		
+		
+		if(screenChoiceMenu.getValue().equals(WINDOWED))
+		{
+			height = image.getHeight()-32;
+			baseHeight = (int)(ratioY * height) +31;
+			baseWidth = (int)Math.round(ratioX * (image.getWidth()-2))+1;
+			System.out.println("WINDOWED MODE!");
+		}
+		else
+		{
+			height = image.getHeight();
+			baseHeight = (int)(ratioY * height);
+			baseWidth = (int)Math.round(ratioX * image.getWidth());
+		}
+		heightTracker = baseHeight;
 		
 		while(heightTracker >1)
 		{	
